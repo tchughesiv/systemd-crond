@@ -9,7 +9,7 @@ objects:
     creationTimestamp: null
     name: systemd
 - apiVersion: v1
-  allowHostDirVolumePlugin: false
+  allowHostDirVolumePlugin: true
   allowHostIPC: false
   allowHostNetwork: false
   allowHostPID: false
@@ -24,9 +24,8 @@ objects:
   kind: SecurityContextConstraints
   metadata:
     annotations:
-      kubernetes.io/description: systemd-restricted denies access to all host features and requires
-        pods to be run with a UID, and SELinux context that are allocated to the namespace. This
-        is the second most restrictive SCC.
+      kubernetes.io/description: systemd-restricted denies access to most host features and requires
+        pods to be run with a UID, and SELinux context that are allocated to the namespace.
     creationTimestamp: null
     name: systemd-restricted
   priority: null
@@ -54,27 +53,15 @@ objects:
       app: systemd-crond
     name: systemd-crond
   spec:
+    dockerImageRepository: docker.io/tchughesiv/systemd-crond
     tags:
-    - name: "systemd-crond"
-- apiVersion: "v1"
-  kind: "BuildConfig"
-  metadata:
-    name: "systemd-crond" 
-  spec:
-    source:
-      git:
-        uri: https://github.com/tchughesiv/systemd-crond
-    strategy: 
-      type: "Docker"
-    output:
-      to:
-        kind: "ImageStreamTag"
-        name: "systemd-crond:latest"
-    triggers:
-    - generic:
-        secret: b725254e6534fd70
-      type: Generic
-    - type: ConfigChange
+    - name: latest
+      from:
+        kind: DockerImage
+        name: 'docker.io/tchughesiv/systemd-crond:latest'
+      generation: 2
+      importPolicy:
+        scheduled: true
 - apiVersion: v1
   kind: DeploymentConfig
   metadata:
@@ -114,12 +101,27 @@ objects:
           name: systemd-crond
           resources: {}
           terminationMessagePath: /dev/termination-log
+          volumeMounts:
+          - mountPath: /sys/fs/cgroup
+            name: cgroup
+          - mountPath: /run
+            name: run
+          - mountPath: /tmp
+            name: tmp
         dnsPolicy: ClusterFirst
         restartPolicy: Always
         securityContext: {}
         serviceAccount: systemd
         serviceAccountName: systemd
         terminationGracePeriodSeconds: 30
+        volumes:
+        - hostPath:
+            path: /sys/fs/cgroup
+          name: cgroup
+        - emptyDir: {}
+          name: run
+        - emptyDir: {}
+          name: tmp
     test: false
     triggers:
     - type: ConfigChange
