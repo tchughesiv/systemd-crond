@@ -70,7 +70,7 @@ objects:
     output:
       to:
         kind: "ImageStreamTag"
-        name: "systemd-crond"
+        name: "systemd-crond:latest"
     triggers:
     - generic:
         secret: b725254e6534fd70
@@ -130,5 +130,5 @@ objects:
         - systemd-crond
         from:
           kind: ImageStreamTag
-          name: systemd-crond
+          name: systemd-crond:latest
       type: ImageChange
