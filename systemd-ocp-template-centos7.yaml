@@ -34,7 +34,6 @@ objects:
   - KILL
   - MKNOD
   - SYS_CHROOT
-  - SETGID
   runAsUser:
     type: MustRunAsRange
   seLinuxContext:
