@@ -22,8 +22,10 @@ RUN chmod -R ug+x ${APP_ROOT}/bin ${APP_ROOT}/etc /tmp/user_setup /tmp/systemd_s
 ### systemd requirements - to cleanly shutdown systemd, use SIGRTMIN+3
 STOPSIGNAL SIGRTMIN+3
 ENV container=docker
+COPY miqtop.service /usr/lib/systemd/system
+COPY miqtop.sh /bin
 RUN systemctl set-default multi-user.target && \
-    systemctl enable crond && \
+    systemctl enable crond miqtop && \
     /tmp/systemd_setup
 
 ### Containers should NOT run as root as a good practice
